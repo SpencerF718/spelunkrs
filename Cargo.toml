@@ -1,0 +1,7 @@
+[package]
+name = "spelunkrs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+jieba-rs = "0.10.3"
