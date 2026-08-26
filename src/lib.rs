@@ -32,26 +32,26 @@ pub enum FileType {
 
 impl FileType {
     /// Supported file extensions for plain text, Markdown notes, and subtitles.
-    pub const TEXT_EXTENSIONS: &'static [&'static str] = &[
+    pub const TEXT_EXTENSIONS: &[&str] = &[
         "md", "markdown", "txt", "srt", "vtt", "csv", "tsv",
     ];
 
     /// Supported file extensions for audio and video media.
-    pub const MEDIA_EXTENSIONS: &'static [&'static str] = &[
+    pub const MEDIA_EXTENSIONS: &[&str] = &[
         "mp3", "wav", "m4a", "flac", "ogg", "opus", "aac", "wma",
         "mp4", "mkv", "webm", "mov", "avi",
     ];
 
     /// Supported file extensions for Anki flashcard decks and databases.
-    pub const ANKI_EXTENSIONS: &'static [&'static str] = &[
+    pub const ANKI_EXTENSIONS: &[&str] = &[
         "apkg", "colpkg", "anki2", "anki21",
     ];
 
     /// Supported file extensions for PDF documents.
-    pub const PDF_EXTENSIONS: &'static [&'static str] = &["pdf"];
+    pub const PDF_EXTENSIONS: &[&str] = &["pdf"];
 
     /// Supported file extensions for EPUB e-books.
-    pub const EPUB_EXTENSIONS: &'static [&'static str] = &["epub"];
+    pub const EPUB_EXTENSIONS: &[&str] = &["epub"];
 
     /// Determines the [`FileType`] from a filesystem path by inspecting its extension.
     ///
@@ -64,14 +64,14 @@ impl FileType {
     ///
     /// ```
     /// use spelunkrs::FileType;
-    /// use std::path::Path;
     ///
-    /// assert_eq!(FileType::from_path(Path::new("note.md")).unwrap(), FileType::Text);
-    /// assert_eq!(FileType::from_path(Path::new("audio.mp3")).unwrap(), FileType::Media);
-    /// assert!(FileType::from_path(Path::new("program.exe")).is_err());
+    /// assert_eq!(FileType::from_path("note.md").unwrap(), FileType::Text);
+    /// assert_eq!(FileType::from_path("audio.mp3").unwrap(), FileType::Media);
+    /// assert!(FileType::from_path("program.exe").is_err());
     /// ```
-    pub fn from_path(path: &Path) -> Result<Self, TokenizerError> {
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, TokenizerError> {
         let extension = path
+            .as_ref()
             .extension()
             .and_then(std::ffi::OsStr::to_str)
             .unwrap_or("")
@@ -432,7 +432,7 @@ Translation: Let's test out this system.
     fn test_file_type_text_extensions() {
         for extension in FileType::TEXT_EXTENSIONS {
             let path = format!("file.{}", extension);
-            let result = FileType::from_path(Path::new(&path));
+            let result = FileType::from_path(&path);
             assert_eq!(result.unwrap(), FileType::Text, "Expected Text for .{}", extension);
         }
     }
@@ -441,7 +441,7 @@ Translation: Let's test out this system.
     fn test_file_type_media_extensions() {
         for extension in FileType::MEDIA_EXTENSIONS {
             let path = format!("file.{}", extension);
-            let result = FileType::from_path(Path::new(&path));
+            let result = FileType::from_path(&path);
             assert_eq!(result.unwrap(), FileType::Media, "Expected Media for .{}", extension);
         }
     }
@@ -450,7 +450,7 @@ Translation: Let's test out this system.
     fn test_file_type_anki_extensions() {
         for extension in FileType::ANKI_EXTENSIONS {
             let path = format!("file.{}", extension);
-            let result = FileType::from_path(Path::new(&path));
+            let result = FileType::from_path(&path);
             assert_eq!(result.unwrap(), FileType::Anki, "Expected Anki for .{}", extension);
         }
     }
@@ -459,7 +459,7 @@ Translation: Let's test out this system.
     fn test_file_type_pdf() {
         for extension in FileType::PDF_EXTENSIONS {
             let path = format!("document.{}", extension);
-            let result = FileType::from_path(Path::new(&path));
+            let result = FileType::from_path(&path);
             assert_eq!(result.unwrap(), FileType::Pdf, "Expected Pdf for .{}", extension);
         }
     }
@@ -468,14 +468,14 @@ Translation: Let's test out this system.
     fn test_file_type_epub() {
         for extension in FileType::EPUB_EXTENSIONS {
             let path = format!("novel.{}", extension);
-            let result = FileType::from_path(Path::new(&path));
+            let result = FileType::from_path(&path);
             assert_eq!(result.unwrap(), FileType::Epub, "Expected Epub for .{}", extension);
         }
     }
 
     #[test]
     fn test_file_type_unsupported() {
-        let result = FileType::from_path(Path::new("archive.zip"));
+        let result = FileType::from_path("archive.zip");
         match result {
             Err(TokenizerError::UnsupportedFileType(extension)) => assert_eq!(extension, "zip"),
             _ => panic!("Expected UnsupportedFileType, got {:?}", result),
@@ -484,7 +484,7 @@ Translation: Let's test out this system.
 
     #[test]
     fn test_file_type_no_extension() {
-        let result = FileType::from_path(Path::new("README"));
+        let result = FileType::from_path("README");
         match result {
             Err(TokenizerError::UnsupportedFileType(extension)) => assert_eq!(extension, ""),
             _ => panic!("Expected UnsupportedFileType for no extension, got {:?}", result),
@@ -493,17 +493,33 @@ Translation: Let's test out this system.
 
     #[test]
     fn test_file_type_uppercase_extension() {
-        assert_eq!(FileType::from_path(Path::new("NOTES.MD")).unwrap(), FileType::Text);
-        assert_eq!(FileType::from_path(Path::new("audio.MP3")).unwrap(), FileType::Media);
-        assert_eq!(FileType::from_path(Path::new("deck.APKG")).unwrap(), FileType::Anki);
+        assert_eq!(FileType::from_path("NOTES.MD").unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path("audio.MP3").unwrap(), FileType::Media);
+        assert_eq!(FileType::from_path("deck.APKG").unwrap(), FileType::Anki);
     }
 
     #[test]
     fn test_file_type_multiple_dots() {
-        let result = FileType::from_path(Path::new("archive.tar.gz"));
+        let result = FileType::from_path("archive.tar.gz");
         match result {
             Err(TokenizerError::UnsupportedFileType(extension)) => assert_eq!(extension, "gz"),
             _ => panic!("Expected UnsupportedFileType(\"gz\"), got {:?}", result),
         }
+    }
+
+    #[test]
+    fn test_file_type_as_ref_path_types() {
+        use std::path::{Path, PathBuf};
+
+        let str_ref: &str = "test.md";
+        let string: String = String::from("test.md");
+        let path: &Path = Path::new("test.md");
+        let path_buf: PathBuf = PathBuf::from("test.md");
+
+        assert_eq!(FileType::from_path(str_ref).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(&string).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(path).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(&path_buf).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(path_buf).unwrap(), FileType::Text);
     }
 }
