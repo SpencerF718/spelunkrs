@@ -511,15 +511,15 @@ Translation: Let's test out this system.
     fn test_file_type_as_ref_path_types() {
         use std::path::{Path, PathBuf};
 
-        let str_ref: &str = "test.md";
-        let string: String = String::from("test.md");
-        let path: &Path = Path::new("test.md");
-        let path_buf: PathBuf = PathBuf::from("test.md");
+        let string_slice: &str = "test.md";
+        let owned_string: String = String::from("test.md");
+        let path_reference: &Path = Path::new("test.md");
+        let path_buffer: PathBuf = PathBuf::from("test.md");
 
-        assert_eq!(FileType::from_path(str_ref).unwrap(), FileType::Text);
-        assert_eq!(FileType::from_path(&string).unwrap(), FileType::Text);
-        assert_eq!(FileType::from_path(path).unwrap(), FileType::Text);
-        assert_eq!(FileType::from_path(&path_buf).unwrap(), FileType::Text);
-        assert_eq!(FileType::from_path(path_buf).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(string_slice).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(&owned_string).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(path_reference).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(&path_buffer).unwrap(), FileType::Text);
+        assert_eq!(FileType::from_path(path_buffer).unwrap(), FileType::Text);
     }
 }
