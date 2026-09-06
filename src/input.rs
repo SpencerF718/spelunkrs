@@ -108,7 +108,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_extract_text_raw_file_contents() {
+    fn extract_text_preserves_markdown_formatting() {
         let path = "/tmp/test_raw_input.md";
         let content = "# 测试\n\n**测试**";
 
@@ -120,7 +120,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_text_unimplemented_file_type() {
+    fn extract_text_rejects_mp3_files() {
         let result = extract_text("audio.mp3");
 
         match result {
@@ -132,7 +132,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_text_extensions() {
+    fn from_path_returns_text_for_text_extensions() {
         for extension in FileType::TEXT_EXTENSIONS {
             let path = format!("file.{}", extension);
             let result = FileType::from_path(&path);
@@ -146,7 +146,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_media_extensions() {
+    fn from_path_returns_media_for_media_extensions() {
         for extension in FileType::MEDIA_EXTENSIONS {
             let path = format!("file.{}", extension);
             let result = FileType::from_path(&path);
@@ -160,7 +160,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_anki_extensions() {
+    fn from_path_returns_anki_for_anki_extensions() {
         for extension in FileType::ANKI_EXTENSIONS {
             let path = format!("file.{}", extension);
             let result = FileType::from_path(&path);
@@ -174,7 +174,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_pdf() {
+    fn from_path_returns_pdf_for_pdf_extensions() {
         for extension in FileType::PDF_EXTENSIONS {
             let path = format!("document.{}", extension);
             let result = FileType::from_path(&path);
@@ -188,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_epub() {
+    fn from_path_returns_epub_for_epub_extensions() {
         for extension in FileType::EPUB_EXTENSIONS {
             let path = format!("novel.{}", extension);
             let result = FileType::from_path(&path);
@@ -202,7 +202,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_unsupported() {
+    fn from_path_rejects_unsupported_extensions() {
         let result = FileType::from_path("archive.zip");
         match result {
             Err(InputError::UnsupportedFileType(extension)) => assert_eq!(extension, "zip"),
@@ -211,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_no_extension() {
+    fn from_path_rejects_paths_without_extensions() {
         let result = FileType::from_path("README");
         match result {
             Err(InputError::UnsupportedFileType(extension)) => assert_eq!(extension, ""),
@@ -223,14 +223,14 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_uppercase_extension() {
+    fn from_path_accepts_uppercase_extensions() {
         assert_eq!(FileType::from_path("NOTES.MD").unwrap(), FileType::Text);
         assert_eq!(FileType::from_path("audio.MP3").unwrap(), FileType::Media);
         assert_eq!(FileType::from_path("deck.APKG").unwrap(), FileType::Anki);
     }
 
     #[test]
-    fn test_file_type_multiple_dots() {
+    fn from_path_uses_last_extension_when_filename_has_multiple_dots() {
         let result = FileType::from_path("archive.tar.gz");
         match result {
             Err(InputError::UnsupportedFileType(extension)) => assert_eq!(extension, "gz"),
@@ -239,7 +239,7 @@ mod tests {
     }
 
     #[test]
-    fn test_file_type_as_ref_path_types() {
+    fn from_path_accepts_strings_and_path_types() {
         use std::path::{Path, PathBuf};
 
         let string_slice: &str = "test.md";

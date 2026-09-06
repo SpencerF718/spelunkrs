@@ -45,7 +45,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_tokenize_file_not_found() {
+    fn tokenize_file_returns_not_found_when_file_is_missing() {
         let tokenizer = Tokenizer::new();
         let result = tokenize_file(&tokenizer, "fake_file.md");
         match result {
@@ -57,7 +57,7 @@ mod tests {
     }
 
     #[test]
-    fn test_tokenize_file_markdown() {
+    fn tokenize_file_counts_chinese_words_in_markdown() {
         let tokenizer = Tokenizer::new();
         let path = "/tmp/test_markdown_file.md";
         let content = "
@@ -87,7 +87,7 @@ Translation: Let's test out this system.
     }
 
     #[test]
-    fn test_tokenize_file_unsupported_file_type() {
+    fn tokenize_file_rejects_unsupported_file_types() {
         let tokenizer = Tokenizer::new();
         let result = tokenize_file(&tokenizer, "program.exe");
 
@@ -100,7 +100,7 @@ Translation: Let's test out this system.
     }
 
     #[test]
-    fn test_tokenize_file_empty_markdown() {
+    fn tokenize_file_returns_no_words_when_markdown_file_is_empty() {
         let tokenizer = Tokenizer::new();
         let path = "/tmp/test_empty_file.md";
         std::fs::write(path, "").unwrap();

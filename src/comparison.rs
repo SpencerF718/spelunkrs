@@ -43,7 +43,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn empty_maps_have_no_target_specific_words() {
+    fn target_specific_words_returns_empty_when_both_maps_are_empty() {
         let known: HashMap<String, usize> = HashMap::new();
         let target: HashMap<String, usize> = HashMap::new();
 
@@ -53,7 +53,7 @@ mod tests {
     }
 
     #[test]
-    fn empty_target_has_no_target_specific_words() {
+    fn target_specific_words_returns_empty_when_target_is_empty() {
         let known: HashMap<String, usize> =
             HashMap::from([("你好".to_string(), 3), ("世界".to_string(), 1)]);
         let target: HashMap<String, usize> = HashMap::new();
@@ -64,7 +64,7 @@ mod tests {
     }
 
     #[test]
-    fn empty_known_returns_target_word_with_its_count() {
+    fn target_specific_words_returns_target_word_with_its_count_when_known_is_empty() {
         let known: HashMap<String, usize> = HashMap::new();
         let target: HashMap<String, usize> = HashMap::from([("你好".to_string(), 3)]);
 
@@ -75,7 +75,7 @@ mod tests {
     }
 
     #[test]
-    fn complete_overlap_returns_no_target_specific_words() {
+    fn target_specific_words_returns_empty_when_all_target_words_are_known() {
         let known: HashMap<String, usize> = HashMap::from([("你好".to_string(), 99)]);
         let target: HashMap<String, usize> = HashMap::from([("你好".to_string(), 3)]);
 
@@ -85,7 +85,7 @@ mod tests {
     }
 
     #[test]
-    fn partial_overlap_returns_target_specific_words_with_target_counts() {
+    fn target_specific_words_returns_unknown_words_with_target_counts_when_some_words_are_known() {
         let known: HashMap<String, usize> = HashMap::from([("你好".to_string(), 99)]);
         let target: HashMap<String, usize> =
             HashMap::from([("你好".to_string(), 3), ("世界".to_string(), 1)]);
@@ -97,7 +97,7 @@ mod tests {
     }
 
     #[test]
-    fn target_specific_words_are_sorted_by_descending_target_count() {
+    fn target_specific_words_sorts_by_descending_count() {
         let known: HashMap<String, usize> = HashMap::new();
         let target: HashMap<String, usize> =
             HashMap::from([("你好".to_string(), 3), ("世界".to_string(), 1)]);
@@ -109,7 +109,7 @@ mod tests {
     }
 
     #[test]
-    fn target_specific_words_with_equal_counts_are_sorted_by_word() {
+    fn target_specific_words_sorts_by_word_when_counts_are_equal() {
         let known: HashMap<String, usize> = HashMap::new();
         let target: HashMap<String, usize> =
             HashMap::from([("你好".to_string(), 3), ("世界".to_string(), 3)]);
@@ -121,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn target_specific_words_combine_filtering_count_order_and_tie_breaking() {
+    fn target_specific_words_filters_known_words_and_sorts_by_count_then_word() {
         let known: HashMap<String, usize> = HashMap::from([("五".to_string(), 10)]);
         let target: HashMap<String, usize> = HashMap::from([
             ("一".to_string(), 5),
