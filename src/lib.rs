@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
+pub mod comparison;
 pub mod input;
 pub mod tokenizer;
 
