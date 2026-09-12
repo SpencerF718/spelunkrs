@@ -81,13 +81,18 @@ impl Default for Tokenizer {
     }
 }
 
-/// Returns 'true' if the char is a Chinese character.
+/// Returns 'true' if the char is a supported Chinese character.
 ///
-/// Checks to see if the character falls between CJK Unified Ideographs
-/// primary block range.  All whitespace, punctuation, and non-CJK characters
-/// return false.
+/// Supports ideographic zero, CJK Unified Ideographs Extension A, and the
+/// primary CJK Unified Ideographs block. All whitespace, punctuation, and
+/// non-CJK characters return false.
 fn is_chinese(character: char) -> bool {
-    matches!(character, '\u{4E00}'..='\u{9FFF}')
+    matches!(
+        character,
+        '\u{3007}' // Ideographic Number Zero
+            | '\u{3400}'..='\u{4DBF}' // CJK Unified Ideographs Extension A
+            | '\u{4E00}'..='\u{9FFF}' // CJK Unified Ideographs
+    )
 }
 
 #[cfg(test)]
@@ -95,12 +100,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn is_chinese_accepts_only_characters_in_the_basic_cjk_range() {
+    fn is_chinese_accepts_supported_cjk_ranges_and_ideographic_zero() {
+        assert!(is_chinese('\u{3007}'));
+        assert!(is_chinese('\u{3400}'));
+        assert!(is_chinese('\u{4DBF}'));
         assert!(is_chinese('一'));
         assert!(is_chinese('鿿'));
         assert!(is_chinese('我'));
 
-        assert!(!is_chinese('\u{4DFF}'));
+        assert!(!is_chinese('0'));
+        assert!(!is_chinese('\u{33FF}'));
+        assert!(!is_chinese('\u{4DC0}'));
         assert!(!is_chinese('\u{A000}'));
         assert!(!is_chinese('A'));
         assert!(!is_chinese('.'));
