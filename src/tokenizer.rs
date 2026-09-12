@@ -62,7 +62,14 @@ impl Tokenizer {
             .map(|token| token.word)
             .filter(|word| word.chars().any(is_chinese))
             .fold(HashMap::new(), |mut map, word| {
-                *map.entry(word.to_string()).or_insert(0) += 1;
+                match map.get_mut(word) {
+                    Some(count) => {
+                        *count += 1;
+                    }
+                    None => {
+                        map.insert(word.to_string(), 1);
+                    }
+                }
                 map
             })
     }
