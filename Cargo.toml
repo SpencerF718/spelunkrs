@@ -5,3 +5,10 @@ edition = "2024"
 
 [dependencies]
 jieba-rs = "0.10.3"
+
+[dev-dependencies]
+criterion = "0.8"
+
+[[bench]]
+name = "tokenizer"
+harness = false
