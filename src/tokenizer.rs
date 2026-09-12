@@ -89,9 +89,9 @@ impl Default for Tokenizer {
 fn is_chinese(character: char) -> bool {
     matches!(
         character,
-        '\u{3007}' // Ideographic Number Zero
-            | '\u{3400}'..='\u{4DBF}' // CJK Unified Ideographs Extension A
-            | '\u{4E00}'..='\u{9FFF}' // CJK Unified Ideographs
+        '\u{3007}'                // Ideographic Number Zero
+        | '\u{3400}'..='\u{4DBF}' // CJK Unified Ideographs Extension A
+        | '\u{4E00}'..='\u{9FFF}' // CJK Unified Ideographs
     )
 }
 
