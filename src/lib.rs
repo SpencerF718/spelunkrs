@@ -9,6 +9,13 @@ pub mod comparison;
 pub mod input;
 pub mod tokenizer;
 
+#[cfg(test)]
+pub(crate) fn test_tokenizer() -> &'static Tokenizer {
+    static TOKENIZER: std::sync::LazyLock<Tokenizer> = std::sync::LazyLock::new(Tokenizer::new);
+
+    std::sync::LazyLock::force(&TOKENIZER)
+}
+
 pub use input::{FileType, InputError};
 pub use tokenizer::Tokenizer;
 
@@ -46,8 +53,8 @@ mod tests {
 
     #[test]
     fn tokenize_file_returns_not_found_when_file_is_missing() {
-        let tokenizer = Tokenizer::new();
-        let result = tokenize_file(&tokenizer, "fake_file.md");
+        let tokenizer = crate::test_tokenizer();
+        let result = tokenize_file(tokenizer, "fake_file.md");
         match result {
             Err(InputError::Io(io_error)) => {
                 assert_eq!(io_error.kind(), std::io::ErrorKind::NotFound);
@@ -58,7 +65,7 @@ mod tests {
 
     #[test]
     fn tokenize_file_counts_chinese_words_in_markdown() {
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let path = "/tmp/test_markdown_file.md";
         let content = "
 ---
@@ -81,15 +88,15 @@ Translation: Let's test out this system.
             ("这个".to_string(), 1),
             ("系统".to_string(), 1),
         ]);
-        let result = tokenize_file(&tokenizer, path);
+        let result = tokenize_file(tokenizer, path);
         let _ = std::fs::remove_file(path);
         assert_eq!(result.unwrap(), expected);
     }
 
     #[test]
     fn tokenize_file_rejects_unsupported_file_types() {
-        let tokenizer = Tokenizer::new();
-        let result = tokenize_file(&tokenizer, "program.exe");
+        let tokenizer = crate::test_tokenizer();
+        let result = tokenize_file(tokenizer, "program.exe");
 
         match result {
             Err(InputError::UnsupportedFileType(extension)) => {
@@ -101,10 +108,10 @@ Translation: Let's test out this system.
 
     #[test]
     fn tokenize_file_returns_no_words_when_markdown_file_is_empty() {
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let path = "/tmp/test_empty_file.md";
         std::fs::write(path, "").unwrap();
-        let result = tokenize_file(&tokenizer, path);
+        let result = tokenize_file(tokenizer, path);
         let _ = std::fs::remove_file(path);
         assert!(result.unwrap().is_empty());
     }

@@ -121,6 +121,7 @@ mod tests {
     fn default_creates_tokenizer_that_segments_chinese_words() {
         let tokenizer = Tokenizer::default();
         let result = tokenizer.tokenize("测试");
+
         assert_eq!(result, HashMap::from([("测试".to_string(), 1)]));
     }
 
@@ -135,7 +136,7 @@ mod tests {
             ("这个".to_string(), 1),
             ("系统".to_string(), 1),
         ]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
@@ -153,7 +154,7 @@ mod tests {
             ("好".to_string(), 1),
             ("吗".to_string(), 1),
         ]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
@@ -163,7 +164,7 @@ mod tests {
         let sentence = "# 汉字 \n **第一**";
         let expected: HashMap<String, usize> =
             HashMap::from([("汉字".to_string(), 1), ("第一".to_string(), 1)]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
@@ -171,7 +172,7 @@ mod tests {
     #[test]
     fn tokenize_returns_no_words_when_input_is_empty() {
         let sentence = "";
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert!(result.is_empty());
     }
@@ -184,7 +185,7 @@ mod tests {
             ("我".to_string(), 1),
             ("叫".to_string(), 1),
         ]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
@@ -192,7 +193,7 @@ mod tests {
     #[test]
     fn tokenize_returns_no_words_when_input_is_whitespace() {
         let sentence = "   \n\t   ";
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert!(result.is_empty());
     }
@@ -201,7 +202,7 @@ mod tests {
     fn tokenize_counts_repeated_words() {
         let sentence = "你好你好你好";
         let expected: HashMap<String, usize> = HashMap::from([("你好".to_string(), 3)]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
@@ -218,7 +219,7 @@ mod tests {
             ("这次".to_string(), 1),
             ("AA制".to_string(), 1),
         ]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
@@ -227,7 +228,7 @@ mod tests {
     fn tokenize_ignores_arabic_numerals() {
         let sentence = "2026年";
         let expected: HashMap<String, usize> = HashMap::from([("年".to_string(), 1)]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
@@ -236,7 +237,7 @@ mod tests {
     fn tokenize_returns_one_word_when_input_is_a_single_chinese_character() {
         let sentence = "王";
         let expected: HashMap<String, usize> = HashMap::from([("王".to_string(), 1)]);
-        let tokenizer = Tokenizer::new();
+        let tokenizer = crate::test_tokenizer();
         let result = tokenizer.tokenize(sentence);
         assert_eq!(result, expected);
     }
