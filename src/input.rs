@@ -109,12 +109,15 @@ mod tests {
 
     #[test]
     fn extract_text_preserves_markdown_formatting() {
-        let path = "/tmp/test_raw_input.md";
+        let path = std::env::temp_dir().join(format!(
+            "extract_text_preserves_markdown_formatting-{}.md",
+            std::process::id()
+        ));
         let content = "# 测试\n\n**测试**";
 
-        std::fs::write(path, content).unwrap();
-        let result = extract_text(path);
-        let _ = std::fs::remove_file(path);
+        std::fs::write(&path, content).unwrap();
+        let result = extract_text(&path);
+        let _ = std::fs::remove_file(&path);
 
         assert_eq!(result.unwrap(), content);
     }

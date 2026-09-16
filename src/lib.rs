@@ -66,7 +66,10 @@ mod tests {
     #[test]
     fn tokenize_file_counts_chinese_words_in_markdown() {
         let tokenizer = crate::test_tokenizer();
-        let path = "/tmp/test_markdown_file.md";
+        let path = std::env::temp_dir().join(format!(
+            "tokenize_file_counts_chinese_words_in_markdown-{}.md",
+            std::process::id()
+        ));
         let content = "
 ---
 tags:
@@ -79,7 +82,7 @@ tags:
 Target Word: 测试 (ce4 shi4) - to test
 Translation: Let's test out this system.
 ";
-        std::fs::write(path, content).unwrap();
+        std::fs::write(&path, content).unwrap();
         let expected = HashMap::from([
             ("测试".to_string(), 3),
             ("我们".to_string(), 1),
@@ -88,8 +91,8 @@ Translation: Let's test out this system.
             ("这个".to_string(), 1),
             ("系统".to_string(), 1),
         ]);
-        let result = tokenize_file(tokenizer, path);
-        let _ = std::fs::remove_file(path);
+        let result = tokenize_file(tokenizer, &path);
+        let _ = std::fs::remove_file(&path);
         assert_eq!(result.unwrap(), expected);
     }
 
@@ -109,10 +112,13 @@ Translation: Let's test out this system.
     #[test]
     fn tokenize_file_returns_no_words_when_markdown_file_is_empty() {
         let tokenizer = crate::test_tokenizer();
-        let path = "/tmp/test_empty_file.md";
-        std::fs::write(path, "").unwrap();
-        let result = tokenize_file(tokenizer, path);
-        let _ = std::fs::remove_file(path);
+        let path = std::env::temp_dir().join(format!(
+            "tokenize_file_returns_no_words_when_markdown_file_is_empty-{}.md",
+            std::process::id()
+        ));
+        std::fs::write(&path, "").unwrap();
+        let result = tokenize_file(tokenizer, &path);
+        let _ = std::fs::remove_file(&path);
         assert!(result.unwrap().is_empty());
     }
 }
