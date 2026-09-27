@@ -56,6 +56,10 @@ impl Tokenizer {
     /// assert_eq!(words, expected);
     /// ```
     pub fn tokenize(&self, sentence: &str) -> HashMap<String, usize> {
+        if !sentence.chars().any(is_chinese) {
+            return HashMap::new();
+        }
+
         self.jieba
             .cut(sentence, false)
             .into_iter()
