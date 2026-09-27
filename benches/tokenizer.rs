@@ -143,6 +143,31 @@ fn benchmark_tokenize(criterion: &mut Criterion) {
     criterion.bench_function("tokenize qian-zi-wen", |bencher| {
         bencher.iter(|| tokenizer.tokenize(&qian_zi_wen_input));
     });
+
+    let percent: u16 = std::env::args()
+        .nth(1)
+        .and_then(|arg| arg.parse().ok())
+        .unwrap_or(50);
+
+    assert!(percent <= 100, "percentage must be between 0 and 100.");
+
+    let mut chinese = QIAN_ZI_WEN
+        .chars()
+        .filter(|character| !character.is_whitespace())
+        .cycle();
+    let mut input = String::new();
+
+    for _ in 0..10000 {
+        if rand::random::<f64>() * 100.0 < percent as f64 {
+            input.push(chinese.next().unwrap());
+        } else {
+            input.push_str(" test ")
+        }
+    }
+
+    criterion.bench_function(&format!("tokenize mixed chinese {percent}%"), |bencher| {
+        bencher.iter(|| tokenizer.tokenize(&input));
+    });
 }
 
 criterion_group! {
