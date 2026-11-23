@@ -79,6 +79,19 @@ impl FileType {
             _ => Err(InputError::UnsupportedFileType(extension)),
         }
     }
+
+    /// Returns `true` if this [`FileType`] currently has an implemented text extractor.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use spelunkrs::FileType;
+    ///
+    /// assert!(FileType::Text.is_supported());
+    /// ```
+    pub fn is_supported(&self) -> bool {
+        matches!(self, FileType::Text)
+    }
 }
 
 /// Extracts raw text from a supported input file.
@@ -96,11 +109,19 @@ pub fn extract_text(path: impl AsRef<Path>) -> Result<String, InputError> {
     }
 }
 
+/// Returns the lowercase file extension for `path`, or an empty string if none is present.
 fn file_extension(path: &Path) -> String {
     path.extension()
         .and_then(std::ffi::OsStr::to_str)
         .unwrap_or("")
         .to_lowercase()
+}
+
+/// Returns `true` if the final path component starts with `.` (hidden file/directory convention).
+fn is_hidden(path: &Path) -> bool {
+    path.file_name()
+        .and_then(std::ffi::OsStr::to_str)
+        .is_some_and(|name| name.starts_with('.'))
 }
 
 #[cfg(test)]
@@ -255,5 +276,67 @@ mod tests {
         assert_eq!(FileType::from_path(path_reference).unwrap(), FileType::Text);
         assert_eq!(FileType::from_path(&path_buffer).unwrap(), FileType::Text);
         assert_eq!(FileType::from_path(path_buffer).unwrap(), FileType::Text);
+    }
+
+    #[test]
+    fn is_supported_returns_true_for_implemented_file_types() {
+        assert!(FileType::Text.is_supported());
+    }
+
+    #[test]
+    fn is_supported_returns_false_for_unimplemented_file_types() {
+        for file_type in [
+            FileType::Media,
+            FileType::Anki,
+            FileType::Pdf,
+            FileType::Epub,
+        ] {
+            assert!(
+                !file_type.is_supported(),
+                "Expected {:?} to be unsupported",
+                file_type
+            );
+        }
+    }
+
+    #[test]
+    fn is_hidden_returns_true_for_dot_prefixed_names() {
+        for path in [".git", ".obsidian", ".DS_Store"] {
+            assert!(is_hidden(Path::new(path)), "Expected {} to be hidden", path);
+        }
+    }
+
+    #[test]
+    fn is_hidden_returns_true_for_nested_hidden_paths() {
+        for path in ["vault/.obsidian", "notes/sub/.env"] {
+            assert!(is_hidden(Path::new(path)), "Expected {} to be hidden", path);
+        }
+    }
+
+    #[test]
+    fn is_hidden_returns_false_for_visible_paths() {
+        for path in [
+            "note.md",
+            "notes/chapter1.md",
+            "./notes/vocab.md",
+            "vault/.obsidian/workspace.json",
+        ] {
+            assert!(
+                !is_hidden(Path::new(path)),
+                "Expected {} not to be hidden",
+                path
+            );
+        }
+    }
+
+    #[test]
+    fn is_hidden_returns_false_for_special_and_empty_paths() {
+        for path in [".", "..", "/", ""] {
+            assert!(
+                !is_hidden(Path::new(path)),
+                "Expected {} not to be hidden",
+                path
+            );
+        }
     }
 }
