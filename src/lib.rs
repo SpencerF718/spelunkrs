@@ -47,6 +47,14 @@ pub fn tokenize_file(
     Ok(tokenizer.tokenize(&text))
 }
 
+/// Adds all word counts from `new_counts` into `total_counts`.
+fn merge_counts(total_counts: &mut HashMap<String, usize>, new_counts: HashMap<String, usize>) {
+    for (word, count) in new_counts {
+        let total = total_counts.entry(word).or_insert(0);
+        *total += count;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -120,5 +128,71 @@ Translation: Let's test out this system.
         let result = tokenize_file(tokenizer, &path);
         let _ = std::fs::remove_file(&path);
         assert!(result.unwrap().is_empty());
+    }
+
+    #[test]
+    fn merge_counts_combines_overlapping_and_distinct_words() {
+        let mut total_counts = HashMap::from([("你好".to_string(), 2), ("世界".to_string(), 1)]);
+        let new_counts = HashMap::from([("世界".to_string(), 3), ("测试".to_string(), 4)]);
+
+        merge_counts(&mut total_counts, new_counts);
+
+        let expected = HashMap::from([
+            ("你好".to_string(), 2),
+            ("世界".to_string(), 4),
+            ("测试".to_string(), 4),
+        ]);
+        assert_eq!(total_counts, expected);
+    }
+
+    #[test]
+    fn merge_counts_inserts_all_words_when_total_is_empty() {
+        let mut total_counts = HashMap::new();
+        let new_counts = HashMap::from([("你好".to_string(), 2), ("世界".to_string(), 5)]);
+
+        merge_counts(&mut total_counts, new_counts);
+
+        let expected = HashMap::from([("你好".to_string(), 2), ("世界".to_string(), 5)]);
+        assert_eq!(total_counts, expected);
+    }
+
+    #[test]
+    fn merge_counts_preserves_total_when_new_counts_is_empty() {
+        let mut total_counts = HashMap::from([("你好".to_string(), 2), ("世界".to_string(), 1)]);
+        let new_counts = HashMap::new();
+
+        merge_counts(&mut total_counts, new_counts);
+
+        let expected = HashMap::from([("你好".to_string(), 2), ("世界".to_string(), 1)]);
+        assert_eq!(total_counts, expected);
+    }
+
+    #[test]
+    fn merge_counts_stays_empty_when_both_maps_are_empty() {
+        let mut total_counts = HashMap::new();
+        let new_counts = HashMap::new();
+
+        merge_counts(&mut total_counts, new_counts);
+
+        assert!(total_counts.is_empty());
+    }
+
+    #[test]
+    fn merge_counts_accumulates_across_multiple_merges() {
+        let mut total_counts = HashMap::new();
+        let first = HashMap::from([("测试".to_string(), 1), ("我们".to_string(), 2)]);
+        let second = HashMap::from([("测试".to_string(), 3), ("系统".to_string(), 1)]);
+        let third = HashMap::from([("测试".to_string(), 2), ("我们".to_string(), 1)]);
+
+        merge_counts(&mut total_counts, first);
+        merge_counts(&mut total_counts, second);
+        merge_counts(&mut total_counts, third);
+
+        let expected = HashMap::from([
+            ("测试".to_string(), 6),
+            ("我们".to_string(), 3),
+            ("系统".to_string(), 1),
+        ]);
+        assert_eq!(total_counts, expected);
     }
 }
