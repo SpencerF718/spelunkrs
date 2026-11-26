@@ -9,6 +9,12 @@ pub enum InputError {
     UnsupportedFileType(String),
 }
 
+impl From<std::io::Error> for InputError {
+    fn from(error: std::io::Error) -> Self {
+        Self::Io(error)
+    }
+}
+
 /// Represents the supported file format categories for language input.
 #[derive(Debug, PartialEq, Eq)]
 pub enum FileType {
@@ -100,11 +106,11 @@ impl FileType {
 ///
 /// Returns [`InputError::Io`] if the file cannot be read, or
 /// [`InputError::UnsupportedFileType`] if the format has no text extractor.
-pub fn extract_text(path: impl AsRef<Path>) -> Result<String, InputError> {
+pub(crate) fn extract_text(path: impl AsRef<Path>) -> Result<String, InputError> {
     let path = path.as_ref();
 
     match FileType::from_path(path)? {
-        FileType::Text => std::fs::read_to_string(path).map_err(InputError::Io),
+        FileType::Text => Ok(std::fs::read_to_string(path)?),
         _ => Err(InputError::UnsupportedFileType(file_extension(path))),
     }
 }
@@ -118,7 +124,7 @@ fn file_extension(path: &Path) -> String {
 }
 
 /// Returns `true` if the final path component starts with `.` (hidden file/directory convention).
-fn is_hidden(path: &Path) -> bool {
+pub(crate) fn is_hidden(path: &Path) -> bool {
     path.file_name()
         .and_then(std::ffi::OsStr::to_str)
         .is_some_and(|name| name.starts_with('.'))
